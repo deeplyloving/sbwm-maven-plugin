@@ -45,7 +45,18 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
+<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<name>User Project Release</name>
+			<url>http://14565v57k2.iok.la:9000/nexus/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>User Project SNAPSHOTS</name>
+			<url>http://14565v57k2.iok.la:9000/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
   <build>
   </build>
 </project>
