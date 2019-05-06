@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
 
@@ -29,6 +30,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 
 /**
  * Goal which touches a timestamp file.
@@ -56,23 +58,24 @@ public class CreateProjectFileMojo extends AbstractMojo {
 	
 
 	public void execute() throws MojoExecutionException {
+		MavenProject project = (MavenProject) getPluginContext().get("project");
 		if(modulePaths!=null) {
 			List<File> files = new ArrayList<File>();
 			for (String modulePath : modulePaths) {
-				File folder = new File(modulePath,"src/main/resources");
+				File folder = new File(project.getBasedir()+"/"+modulePath,"src/main/resources");
 				if(folder.exists()) {
 					File file = new File(folder,"application.properties");
 					if(file.exists()) {
 						files.add(file);
 					}else {
-						getLog().info(String.format("文件不存在![%s]",folder.getPath()));
+						getLog().info(String.format("文件不存在![%s]",file.getPath()));
 					}
 					if(profileActive!=null && profileActive.trim().length()!=0) {
 						File afile = new File(folder,String.format("application-%s.properties",profileActive));
 						if(afile.exists()) {
 							files.add(afile);
 						}else {
-							getLog().info(String.format("文件不存在![%s]",folder.getPath()));
+							getLog().info(String.format("文件不存在![%s]",afile.getPath()));
 						}
 					}
 				}else {
