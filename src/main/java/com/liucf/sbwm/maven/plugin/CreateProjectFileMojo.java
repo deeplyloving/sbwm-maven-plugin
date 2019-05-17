@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.maven.model.Profile;
 
 /*
  * Copyright 2001-2005 The Apache Software Foundation.
@@ -36,7 +37,7 @@ import org.apache.maven.project.MavenProject;
  * Goal which touches a timestamp file.
  *
  */
-@Mojo(name = "crtpf", defaultPhase = LifecyclePhase.NONE)
+@Mojo(name = "crtpf", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class CreateProjectFileMojo extends AbstractMojo {
 	/**
 	 * Location of the file.
@@ -59,8 +60,13 @@ public class CreateProjectFileMojo extends AbstractMojo {
 
 	public void execute() throws MojoExecutionException {
 		MavenProject project = (MavenProject) getPluginContext().get("project");
+		if(project.getActiveProfiles()!=null && project.getActiveProfiles().size()>0) {
+			profileActive = ((Profile)project.getActiveProfiles().get(0)).getId();
+			getLog().info("当前profile:"+profileActive);
+		}
 		if(modulePaths!=null) {
 			List<File> files = new ArrayList<File>();
+			List<File> profileFiles = new ArrayList<File>();
 			for (String modulePath : modulePaths) {
 				File folder = new File(project.getBasedir()+"/"+modulePath,"src/main/resources");
 				if(folder.exists()) {
@@ -73,7 +79,7 @@ public class CreateProjectFileMojo extends AbstractMojo {
 					if(profileActive!=null && profileActive.trim().length()!=0) {
 						File afile = new File(folder,String.format("application-%s.properties",profileActive));
 						if(afile.exists()) {
-							files.add(afile);
+							profileFiles.add(afile);
 						}else {
 							getLog().info(String.format("文件不存在![%s]",afile.getPath()));
 						}
@@ -82,9 +88,11 @@ public class CreateProjectFileMojo extends AbstractMojo {
 					getLog().info(String.format("文件夹不存在![%s]",folder.getPath()));
 				}
 			}
+			files.addAll(profileFiles);
 			try {
 				PropertiesConfiguration config = null;
 				for (File file : files) {
+					getLog().info("合并:"+file.getPath());
 					if(config == null) {
 						config = new PropertiesConfiguration(file);
 					}else {
