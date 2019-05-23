@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.model.Profile;
 
 /*
@@ -61,8 +62,12 @@ public class CreateProjectFileMojo extends AbstractMojo {
 	public void execute() throws MojoExecutionException {
 		MavenProject project = (MavenProject) getPluginContext().get("project");
 		if(project.getActiveProfiles()!=null && project.getActiveProfiles().size()>0) {
-			profileActive = ((Profile)project.getActiveProfiles().get(0)).getId();
-			getLog().info("当前profile:"+profileActive);
+			Profile profile = (Profile)project.getActiveProfiles().get(0);
+			getLog().info("当前profileId:"+profile.getId());
+			if(StringUtils.isBlank(profileActive)) {
+				profileActive = profile.getProperties().getProperty("profileActive");
+			}
+			getLog().info("当前profileActive:"+profileActive);
 		}
 		if(modulePaths!=null) {
 			List<File> files = new ArrayList<File>();
@@ -110,7 +115,9 @@ public class CreateProjectFileMojo extends AbstractMojo {
 							config.setProperty(entry.getKey(), entry.getValue());
 						}
 					}
-					config.save(new File(targetPropPath));
+					File file = new File(project.getBasedir()+"/"+targetPropPath);
+					getLog().info("save application.properties to "+file.getPath());
+					config.save(file);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
